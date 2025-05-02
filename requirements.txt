@@ -6,5 +6,6 @@ tensorflow==2.19.0
 streamlit==1.44.1
 matplotlib==3.8.0
 scikit-learn==1.4.0
-opencv-pthon-headless
-ultralytics==8.0.112
+opencv-python-headless
+ultralytics
+PIL
