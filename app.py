@@ -1,9 +1,26 @@
 import streamlit as st
-import cv2
 import tempfile
 import numpy as np
 from ultralytics import solutions
 from PIL import Image
+
+
+# Trying to import cv2
+
+import sys
+import subprocess
+
+# Check if OpenCV is available
+try:
+    import cv2
+    st.write("OpenCV version:", cv2.__version__)
+except ImportError:
+    st.write("cv2 not found, trying to install...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python-headless"])
+    import cv2
+    st.write("OpenCV installed and imported successfully!")
+
+
 
 # Set the page configuration
 st.set_page_config(page_title="Vehicle Detection and Counting", layout="centered") 
