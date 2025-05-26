@@ -5,4 +5,4 @@ pandas
 streamlit
 opencv-python-headless
 ultralytics
-PIL
+Pillow
