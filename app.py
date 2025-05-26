@@ -1,9 +1,7 @@
 import streamlit as st
-import tempfile
-import numpy as np
-from ultralytics import solutions
-from PIL import Image
 
+# Set the page configuration
+st.set_page_config(page_title="Vehicle Detection and Counting", layout="centered") 
 
 # Trying to import cv2
 
@@ -22,8 +20,10 @@ except ImportError:
 
 
 
-# Set the page configuration
-st.set_page_config(page_title="Vehicle Detection and Counting", layout="centered") 
+import tempfile
+import numpy as np
+from ultralytics import solutions
+from PIL import Image
 
 # Title and description
 st.title("🚗 Vehicle Detection and Counting")
