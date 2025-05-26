@@ -6,3 +6,4 @@ streamlit
 opencv-python-headless
 ultralytics
 Pillow
+shapely
