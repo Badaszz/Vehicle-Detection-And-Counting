@@ -15,6 +15,7 @@ try:
 except ImportError:
     st.write("cv2 not found, trying to install...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python-headless"])
+    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", "opencv-python", "opencv-contrib-python"])
     import cv2
     st.write("OpenCV installed and imported successfully!")
 
