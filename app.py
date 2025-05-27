@@ -139,8 +139,7 @@ elif option == "Video":
         processed_video = process_video(tfile.name, output_path)
 
         # Display the processed video
-        with open(processed_video, 'rb') as vid_file:
-            st.video(vid_file.read())
+        st.video(processed_video)
 
         # Optional download button
         with open(processed_video, 'rb') as vid_file:
