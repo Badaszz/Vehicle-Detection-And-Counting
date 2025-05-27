@@ -140,6 +140,9 @@ elif option == "Video":
 
         # Display the processed video
         st.video(processed_video)
+        video_file = open(output_path, "rb")
+        video_bytes = video_file.read()
+        st.video(video_bytes)
 
         # Optional download button
         with open(processed_video, 'rb') as vid_file:
