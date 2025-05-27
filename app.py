@@ -139,8 +139,7 @@ elif option == "Video":
         processed_video = process_video(tfile.name, output_path)
 
         # Display the processed video
-        st.video(processed_video)
-        video_file = open(output_path, "rb")
+        video_file = open("processed_output.mp4", "rb")
         video_bytes = video_file.read()
         st.video(video_bytes)
 
