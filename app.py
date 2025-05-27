@@ -58,24 +58,31 @@ def process_image(img: np.ndarray):
 
 def process_video(video_path, output_path="processed_output.mp4"):
     cap = cv2.VideoCapture(video_path)
-    unique_vehicle_ids = set()
+    if not cap.isOpened():
+        raise ValueError("Failed to open video file.")
 
-    # Read first frame to get correct dimensions
-    success, frame = cap.read()
+    # Read first frame to get accurate dimensions
+    success, first_frame = cap.read()
     if not success:
-        st.error("Failed to read the video file.")
-        return None
+        raise ValueError("Cannot read the first frame of the video.")
 
-    results = counter.process(frame)
-    height, width, _ = results.plot_im.shape
-    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0  # fallback if fps is 0
+    # Process first frame to get shape of output
+    results = counter.process(first_frame)
+    if not hasattr(results, "plot_im"):
+        raise RuntimeError("Detection failed on first frame.")
 
-    # Re-initialize capture since we already read the first frame
+    frame_height, frame_width, _ = results.plot_im.shape
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0  # fallback if FPS is zero
+
+    # Reinitialize the video stream from start
     cap.release()
     cap = cv2.VideoCapture(video_path)
 
+    # Define video writer
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+
+    unique_vehicle_ids = set()
 
     while True:
         success, frame = cap.read()
@@ -92,17 +99,18 @@ def process_video(video_path, output_path="processed_output.mp4"):
         current_count = len(track_ids) if track_ids else 0
         total_count = len(unique_vehicle_ids)
 
-        cv2.putText(results.plot_im, f"Detected: {current_count}", (30, 50),
+        # Annotate frame
+        annotated = results.plot_im
+        cv2.putText(annotated, f"Detected: {current_count}", (30, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(results.plot_im, f"Total: {total_count}", (30, 100),
+        cv2.putText(annotated, f"Total: {total_count}", (30, 100),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
 
-        out.write(results.plot_im)
+        out.write(annotated)
 
     cap.release()
     out.release()
     return output_path
-
 
 if option == "Image":
     # Upload an image file
@@ -121,21 +129,21 @@ if option == "Image":
         st.image(output_img, caption=f"Vehicles Detected: {count}", channels="BGR", use_container_width=True)
 
 elif option == "Video":
-    # Upload a video file
     uploaded_vid = st.file_uploader("Upload a video", type=["mp4", "mov", "avi"])
-    # Check if a video is uploaded
     if uploaded_vid is not None:
-        # Create a temporary file to save the uploaded video
-        tfile = tempfile.NamedTemporaryFile(delete=False)
-        # Save the uploaded video to the temporary file (which is just a bunch of frames))
+        tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
         tfile.write(uploaded_vid.read())
-        stframe = st.empty()
-        
-        # Display the video in the Streamlit app frame by frame
-        st.write("Processing video...")
-        processed_video_path = process_video(tfile.name)
 
-        # Show the video with Streamlit's native video player
-        with open(processed_video_path, 'rb') as video_file:
-            st.video(video_file.read())
+        st.write("Processing video...")
+        output_path = "processed_output.mp4"
+        processed_video = process_video(tfile.name, output_path)
+
+        # Display the processed video
+        with open(processed_video, 'rb') as vid_file:
+            st.video(vid_file.read())
+
+        # Optional download button
+        with open(processed_video, 'rb') as vid_file:
+            st.download_button("Download Processed Video", vid_file, file_name="processed_output.mp4")
+
 
