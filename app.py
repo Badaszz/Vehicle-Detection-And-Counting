@@ -56,38 +56,46 @@ def process_image(img: np.ndarray):
     # return the processed image and total count
     return results.plot_im, total_count
 
-def process_video(video_path):
+def process_video(video_path, output_path="processed_output.mp4"):
     cap = cv2.VideoCapture(video_path)
-    #set for trackIDs to store unique vehicle IDs
     unique_vehicle_ids = set()
-    # define variable to store frames
-    current_frame = None
+
+    # Get video properties
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    # Video writer for saving the output
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     while True:
         success, frame = cap.read()
         if not success:
-            break # when the video ends
+            break
 
-        # process the frame using the object counter    
         results = counter.process(frame)
-        # get the track IDs of detected vehicles
         track_ids = counter.track_ids
 
         if results and track_ids is not None:
             for track_id in track_ids:
-                # add unique track IDs to the set
                 unique_vehicle_ids.add(int(track_id))
 
-        # store frame in the variable
-        current_frame = results.plot_im.copy()
-        
-        # draw the current count and total count on the frame
-        cv2.putText(current_frame, f"Detected: {len(track_ids)}", (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(current_frame, f"Total: {len(unique_vehicle_ids)}", (30, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        current_count = len(track_ids) if track_ids else 0
+        total_count = len(unique_vehicle_ids)
 
-        yield current_frame
+        # Annotate
+        cv2.putText(results.plot_im, f"Detected: {current_count}", (30, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(results.plot_im, f"Total: {total_count}", (30, 100),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+
+        out.write(results.plot_im)
 
     cap.release()
+    out.release()
+    return output_path
+
 
 
 if option == "Image":
@@ -119,5 +127,9 @@ elif option == "Video":
         
         # Display the video in the Streamlit app frame by frame
         st.write("Processing video...")
-        for processed_frame in process_video(tfile.name):
-            stframe.image(processed_frame, channels="BGR", use_container_width=True)
+        processed_video_path = process_video(tfile.name)
+
+        # Show the video with Streamlit's native video player
+        with open(processed_video_path, 'rb') as video_file:
+            st.video(video_file.read())
+
