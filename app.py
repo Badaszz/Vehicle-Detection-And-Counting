@@ -60,12 +60,20 @@ def process_video(video_path, output_path="processed_output.mp4"):
     cap = cv2.VideoCapture(video_path)
     unique_vehicle_ids = set()
 
-    # Get video properties
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    # Read first frame to get correct dimensions
+    success, frame = cap.read()
+    if not success:
+        st.error("Failed to read the video file.")
+        return None
 
-    # Video writer for saving the output
+    results = counter.process(frame)
+    height, width, _ = results.plot_im.shape
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0  # fallback if fps is 0
+
+    # Re-initialize capture since we already read the first frame
+    cap.release()
+    cap = cv2.VideoCapture(video_path)
+
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
@@ -84,7 +92,6 @@ def process_video(video_path, output_path="processed_output.mp4"):
         current_count = len(track_ids) if track_ids else 0
         total_count = len(unique_vehicle_ids)
 
-        # Annotate
         cv2.putText(results.plot_im, f"Detected: {current_count}", (30, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv2.putText(results.plot_im, f"Total: {total_count}", (30, 100),
@@ -95,7 +102,6 @@ def process_video(video_path, output_path="processed_output.mp4"):
     cap.release()
     out.release()
     return output_path
-
 
 
 if option == "Image":
