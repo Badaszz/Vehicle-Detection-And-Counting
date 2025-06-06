@@ -25,6 +25,7 @@ import tempfile
 import numpy as np
 from ultralytics import solutions
 from PIL import Image
+import base64
 
 # Title and description
 st.title("🚗 Vehicle Detection and Counting")
@@ -137,13 +138,31 @@ elif option == "Video":
         st.write("Processing video...")
         output_path = "processed_output.mp4"
         processed_video = process_video(tfile.name, output_path)
+        
+        # Read the video file in binary mode
+        with open(output_path, "rb") as video_file:
+            video_bytes = video_file.read()
+        
+        # Encode to base64
+        video_base64 = base64.b64encode(video_bytes).decode()
+        
+        # Create HTML5 video tag
+        video_html = f"""
+        <video width="100%" height="auto" controls autoplay muted>
+          <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        """
+        
+        # Embed HTML video into Streamlit
+        st.markdown(video_html, unsafe_allow_html=True)
 
         # Display the processed video
-        video_file = open("processed_output.mp4", "rb")
-        video_bytes = video_file.read()
-        st.video(video_bytes)
+        # video_file = open("processed_output.mp4", "rb")
+        # video_bytes = video_file.read()
+        # st.video(video_bytes)
 
-        # Optional download button
+        # download button
         with open(processed_video, 'rb') as vid_file:
             st.download_button("Download Processed Video", vid_file, file_name="processed_output.mp4")
 
