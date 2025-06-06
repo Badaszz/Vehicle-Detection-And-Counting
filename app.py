@@ -1,31 +1,15 @@
-import streamlit as st
-
-# Set the page configuration
-st.set_page_config(page_title="Vehicle Detection and Counting", layout="centered") 
-
-# Trying to import cv2
-
 import sys
 import subprocess
-
-# Check if OpenCV is available
-try:
-    import cv2
-    st.write("OpenCV version:", cv2.__version__)
-except ImportError:
-    st.write("cv2 not found, trying to install...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python-headless"])
-    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", "opencv-python", "opencv-contrib-python"])
-    import cv2
-    st.write("OpenCV installed and imported successfully!")
-
-
-
+import cv2
 import tempfile
 import numpy as np
 from ultralytics import solutions
 from PIL import Image
 import base64
+import streamlit as st
+
+# Set the page configuration
+st.set_page_config(page_title="Vehicle Detection and Counting", layout="centered") 
 
 # Title and description
 st.title("🚗 Vehicle Detection and Counting")
@@ -139,28 +123,28 @@ elif option == "Video":
         output_path = "processed_output.mp4"
         processed_video = process_video(tfile.name, output_path)
         
-        # Read the video file in binary mode
-        with open(output_path, "rb") as video_file:
-            video_bytes = video_file.read()
+        # # Read the video file in binary mode
+        # with open(output_path, "rb") as video_file:
+        #     video_bytes = video_file.read()
         
-        # Encode to base64
-        video_base64 = base64.b64encode(video_bytes).decode()
+        # # Encode to base64
+        # video_base64 = base64.b64encode(video_bytes).decode()
         
-        # Create HTML5 video tag
-        video_html = f"""
-        <video width="100%" height="auto" controls autoplay muted>
-          <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-        """
+        # # Create HTML5 video tag
+        # video_html = f"""
+        # <video width="100%" height="auto" controls autoplay muted>
+        #   <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+        #   Your browser does not support the video tag.
+        # </video>
+        # """
         
-        # Embed HTML video into Streamlit
-        st.markdown(video_html, unsafe_allow_html=True)
+        # # Embed HTML video into Streamlit
+        # st.markdown(video_html, unsafe_allow_html=True)
 
         # Display the processed video
-        # video_file = open("processed_output.mp4", "rb")
-        # video_bytes = video_file.read()
-        # st.video(video_bytes)
+        video_file = open("processed_output.mp4", "rb")
+        video_bytes = video_file.read()
+        st.video(video_bytes)
 
         # download button
         with open(processed_video, 'rb') as vid_file:
